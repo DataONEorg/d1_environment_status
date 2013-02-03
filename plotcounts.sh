@@ -6,18 +6,20 @@
 CURL="curl -g -k -s"
 XML=xml
 DFILE="plotcounts.csv"
-NDAYS=30
+NDAYS=220
+DSTART="2012-06-10"
 
 function main {
     buildDataFile
     generatePlot
 }
 
-# Iterate over 30 days and get a package count for each day
+# Iterate over NDAYS days and get a package count for each day
 function buildDataFile {
     echo "day | count" > $DFILE
     for (( d=0; d<=$NDAYS; d++ )); do 
         D=$(expr $NDAYS - $d)
+        ((d = d + 4))
         count $D
     done
 }
