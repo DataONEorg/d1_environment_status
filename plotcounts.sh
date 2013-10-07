@@ -6,8 +6,11 @@
 CURL="curl -g -k -s"
 XML=xml
 DFILE="plotcounts.csv"
-NDAYS=220
+#NDAYS=300
 DSTART="2012-06-10"
+#CMD="(( $(date "+%s") - $(date -j -f "%Y-%m-%d" ${DSTART} "+%s") ))/(60*60*24)"
+#echo $CMD
+NDAYS=$(echo "(( $(date "+%s") - $(date -j -f "%Y-%m-%d" ${DSTART} "+%s") ))/(60*60*24)" | bc)
 
 function main {
     buildDataFile
@@ -35,10 +38,13 @@ function count {
     TIME="T23:59:59.999Z/DAY%2B1DAYS"
     DM="*%20TO%20NOW-${DAY}DAY"
     MOD="dateModified:[${DM}]"
-    FORM="%20AND%20NOT%20formatId:%22http://www.openarchives.org/ore/terms%22"
+    #FORM="%20AND%20NOT%20formatId:%22http://www.openarchives.org/ore/terms%22"
+    FORM="%20AND%20NOT%20formatType:RESOURCE"
+    #FORM=""
     ROW="&rows=0"
     BASE="https://cn.dataone.org/cn/v1/search/solr?q="
     URI=${BASE}${MOD}${FORM}${ROW}
+    echo ${URI}
     
     CNT=`$CURL ${URI} | $XML sel -N d1=http://ns.dataone.org/service/types/v1 -t -v /d1:objectList/@total`
     echo "$DATE, $CNT"
