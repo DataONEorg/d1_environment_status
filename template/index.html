@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8">
+	<title>Object Counts</title>
+	<meta name="description" content="Object counts for DataONE $baseurl">
+	<meta name="author" content="Dave">
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+  <link rel="stylesheet" href="stylesheets/dataone.css">
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+</head>
+<body>
+
+
+
+	<!-- Primary Page Layout
+	================================================== -->
+
+	<!-- Delete everything in this .container and get started on your own site! -->
+
+	<div class="container">
+		<div class="sixteen columns">
+			<h1 class="remove-bottom" style="margin-top: 40px">DataONE Production Object Counts</h1>
+			<h5>Generated: $date</h5>
+			<h5 class="subheader">$baseurl</h5>
+			<hr />
+		</div>
+		<div class="one-third column">
+			<h4>All Objects</h4>
+			<div class="two columns">
+  			<table>
+  			  <tr><td>Data</td><td class="data">$data</td></tr>
+  			  <tr><td>Metadata</td><td class="data">$metadata</td></tr>
+  			  <tr><td>Resource</td><td class="data">$resource</td></tr>
+  			  <tr><td class="total">Total</td><td class="data total">$total</td></tr>
+  			</table>
+		  </div>
+		</div>
+		<div class="one-third column">
+			<h4>Publicly Readable</h4>
+			<div class="two columns">
+			<table>
+			  <tr><td>Data</td><td class="data">$data_pub</td></tr>
+			  <tr><td>Metadata</td><td class="data">$metadata_pub</td></tr>
+			  <tr><td>Resource</td><td class="data">$resource_pub</td></tr>
+			  <tr><td class="total">&nbsp;</td><td class="total data">$total_pub</td></tr>
+			</table>
+			</div>
+		</div>
+		<div class="one-third column">
+			<h4>Public, Not Obsoleted</h4>
+			<div class="two columns">
+			<table>
+			  <tr><td>Data</td><td class="data">$data_pub_no</td></tr>
+			  <tr><td>Metadata</td><td class="data">$metadata_pub_no</td></tr>
+			  <tr><td>Resource</td><td class="data">$resource_pub_no</td></tr>
+			  <tr><td class="total">&nbsp;</td><td class="total data">$total_pub_no</td></tr>
+			</table>
+			</div>
+		</div>
+
+	</div><!-- container -->
+
+
+<!-- End Document
+================================================== -->
+</body>
+</html>
