@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+
+  <!-- Basic Page Needs
+  ================================================== -->
+  <meta charset="utf-8">
+  <title>Object Counts</title>
+  <meta name="description" content="Object counts for DataONE $baseurl">
+  <meta name="author" content="Dave">
+
+  <!-- Mobile Specific Metas
+  ================================================== -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- CSS
+  ================================================== -->
+  <link rel="stylesheet" href="stylesheets/base.css">
+  <link rel="stylesheet" href="stylesheets/skeleton.css">
+  <link rel="stylesheet" href="stylesheets/layout.css">
+  <link rel="stylesheet" href="stylesheets/dataone.css">
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <!-- Favicons
+  ================================================== -->
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+  <!-- Script
+  ================================================== -->
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="lib/jquery-1.7.2.min.js"></script>
+  <!--  index.js is a file that contains a single variable, an array of 
+    [timestamp, datafile]  -->
+  <script type="text/javascript" src="data/index.js"></script>
+
+  <script type="text/javascript">
+  var DATA_FOLDER = "data";
+  var VIZ_READY = false;
+  
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(visualizationReady);
+
+  
+  function dataLoadError(jqxhr, settings, exception) {
+	  console.log("Error loading javascript");
+  }
+  
+  
+  function jq( someid) {
+	  return someid.replace( /(:|\.|\[|\])/g, "\\$1" );
+  }
+  
+  function renderData(data, textStatus, jqxhr) {
+	  $("[id^=d1\\.]").each(function( index, element ) {
+		  console.log("INDEX = " + element.id );
+		  var keys = element.id.split(".");
+		  var newv = env_state;
+		  for (var i=1; i < keys.length; i ++) {
+			  newv = newv[keys[i]]
+		  }
+		  $("[id=" + jq( element.id) + "]").text( newv );
+	  });
+  }
+  
+  
+  function renderSizeHistogram(otype, targetdiv, title, units, scaler, hLog) {
+	  //Display a histogram for object sizes
+	  var data = new google.visualization.DataTable();
+	  data.addColumn('number', 'Size');
+	  data.addColumn('number', 'Counts');
+	  data.addColumn({type:'string', role: 'style'});
+	  for (var i=0; i< env_state.summary.sizes[otype].histogram.length; i++) {
+		  var row = env_state.summary.sizes[otype].histogram[i];
+		  var a = (row[0]+row[1]) / (2*scaler);
+		  var b = row[2];
+		  data.addRow([a, b, "#888888"]);
+	    console.log(row);
+	    console.log(a + "  " + b);
+	  }
+	  //var view = new google.visualization.DataView(data);
+	  //view.setColumns()
+	  htitle = "Size (" + units + ")";
+	  if (hLog)
+		  htitle = "Log(Size) (" + units + ")";
+	  var options = {
+			  title: title,
+			  legend: {position: 'none'},
+			  vAxis: {logScale: true,
+				        title: "Log(Count)",
+				        gridlines: {count: 4}},
+			  hAxis: {logScale: hLog,
+				        title: htitle,
+				        gridlines: {count: -1}}
+	  }
+	  var chart = new google.visualization.ColumnChart(document.getElementById(targetdiv));
+	  chart.draw(data, options)
+  }
+  
+  
+  function loadLatestDataSuccess(data, textStatus, jqxhr) {
+	  var i = 10;
+	  while ( i > 0 ) {
+  	  if (typeof env_state == 'undefined') {
+	  	  setTimeout( function() { console.log('Nothing...'); }, 100);
+	      i = i-1;
+	    } else {
+	    	i = 0;
+	    }
+	  }
+	  renderData(data, textStatus, jqxhr);
+    var i = 10;
+	  while ( i > 0 ) {
+      if (!VIZ_READY) {
+        setTimeout( function() { console.log('Nothing...'); }, 100);
+        i = i-1;
+      } else {
+        i = 0;
+      }
+    }
+    renderSizeHistogram("data", "histogram.data", "Public Data Objects", "MB", 1024*1024, true);
+    renderSizeHistogram("metadata", "histogram.metadata", "Public Metadata Objects", "KB", 1024, true);
+    renderSizeHistogram("resource", "histogram.resource", "Public Resource Maps", "KB", 1024, true);
+  }
+  
+  
+  function loadLatestData(){
+	  lastest_entry = env_state_index[env_state_index.length - 1];
+	  $.getScript(DATA_FOLDER + "/" + lastest_entry[1], loadLatestDataSuccess).fail(dataLoadError);
+  }
+  
+  
+  function visualizationReady() {
+	  VIZ_READY=true;
+  }
+  
+  //=== Main ===
+  $(document).ready(function(){
+	  loadLatestData();
+  });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="sixteen columns">
+      <h1 class="remove-bottom" style="margin-top: 40px">DataONE Production Object Counts</h1>
+      <h5>Generated: <span id="d1.meta.tstamp"></span></h5>
+      <h5 class="subheader">Base URL: <span id="d1.meta.baseurl"></span></h5>
+      <hr />
+    </div>
+    <div class="one-third column">
+      <h4>All Objects</h4>
+      <div class="two columns">
+        <div class="counts">
+	        <table>
+	          <tr><td>Data</td><td class="data"><span id="d1.summary.all.data"></span></td></tr>
+	          <tr><td>Metadata</td><td class="data"><span id="d1.summary.all.meta"></span></td></tr>
+	          <tr><td>Resource</td><td class="data"><span id="d1.summary.all.resource"></span></td></tr>
+	          <tr><td class="total">Total</td><td class="data total"><span id="d1.summary.all.total"></span></td></tr>
+	        </table>
+        </div>
+      </div>
+    </div>
+    <div class="one-third column">
+      <h4>Publicly Readable</h4>
+      <div class="two columns">
+        <div class="counts">
+		      <table>
+		        <tr><td>Data</td><td class="data"><span id="d1.summary.public.data"></span></td></tr>
+		        <tr><td>Metadata</td><td class="data"><span id="d1.summary.public.meta"></span></td></tr>
+		        <tr><td>Resource</td><td class="data"><span id="d1.summary.public.resource"></span></td></tr>
+		        <tr><td class="total">&nbsp;</td><td class="total data"><span id="d1.summary.public.total"></span></td></tr>
+		      </table>
+        </div>
+      </div>
+    </div>
+    <div class="one-third column">
+      <h4>Public, Not Obsoleted</h4>
+      <div class="two columns">
+        <div class="counts">
+		      <table>
+		        <tr><td>Data</td><td class="data"><span id="d1.summary.public_notobsolete.data"></span></td></tr>
+		        <tr><td>Metadata</td><td class="data"><span id="d1.summary.public_notobsolete.meta"></span></td></tr>
+		        <tr><td>Resource</td><td class="data"><span id="d1.summary.public_notobsolete.resource"></span></td></tr>
+		        <tr><td class="total">&nbsp;</td><td class="total data"><span id="d1.summary.public_notobsolete.total"></span></td></tr>
+		      </table>
+        </div>
+      </div>
+    </div>
+    <div class="eighteen columns">
+      <div class="five columns">
+        <div id="histogram.data" class="histogram"></div>
+      </div>
+      <div class="five columns">
+        <div id="histogram.metadata" class="histogram"></div>
+      </div>
+      <div class="five columns">
+        <div id="histogram.resource" class="histogram"></div>
+      </div>
+    </div>
+  </div><!-- container -->
+</body>
+</html>

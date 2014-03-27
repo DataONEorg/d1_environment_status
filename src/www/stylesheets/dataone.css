@@ -1,0 +1,30 @@
+td {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+td.data {
+  text-align: right;
+  border-left: 1px solid gray;
+}
+
+td.total {
+  border-top: 2px solid gray;
+}
+
+div.counts {
+	margin-bottom: 10px;
+}
+
+div.histogram {
+	width: 400px;
+	height: 200px
+}
+
+h1 { font-size: 28px; line-height: 34px; margin-bottom: 8px; }
+h2 { font-size: 24px; line-height: 30px; margin-bottom: 6px; }
+h3 { font-size: 20px; line-height: 26px; margin-bottom: 4px; }
+h4 { font-size: 18px; line-height: 24px; margin-bottom: 4px; }
+h5 { font-size: 16px; line-height: 22px; }
+h6 { font-size: 14px; line-height: 21px; }
+.subheader { color: #777; }
