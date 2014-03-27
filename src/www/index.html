@@ -88,13 +88,11 @@
 	  //var view = new google.visualization.DataView(data);
 	  //view.setColumns()
 	  htitle = "Size (" + units + ")";
-	  if (hLog)
-		  htitle = "Log(Size) (" + units + ")";
 	  var options = {
 			  title: title,
 			  legend: {position: 'none'},
 			  vAxis: {logScale: true,
-				        title: "Log(Count)",
+				        title: "Count",
 				        gridlines: {count: 4}},
 			  hAxis: {logScale: hLog,
 				        title: htitle,
@@ -125,9 +123,9 @@
         i = 0;
       }
     }
-    renderSizeHistogram("data", "histogram.data", "Public Data Objects", "MB", 1024*1024, true);
-    renderSizeHistogram("metadata", "histogram.metadata", "Public Metadata Objects", "KB", 1024, true);
-    renderSizeHistogram("resource", "histogram.resource", "Public Resource Maps", "KB", 1024, true);
+    renderSizeHistogram("data", "histogram.data", "Public Data Objects (Log scales)", "MB", 1024*1024, true);
+    renderSizeHistogram("metadata", "histogram.metadata", "Public Metadata Objects (Log scales)", "KB", 1024, true);
+    renderSizeHistogram("resource", "histogram.resource", "Public Resource Maps (Log scales)", "KB", 1024, true);
   }
   
   
