@@ -58,8 +58,9 @@ def escapeQueryTerm(term):
   return term
 
 
-class EnvironmentState(object):  
-  VERSION = "1.1.0"
+class EnvironmentState(object):
+  #increment the version flag if there's a change to the generated data structure  
+  VERSION = "14"
   COUNT_PUBLIC = None
   COUNT_PUBLIC_CURRENT = "-obsoletedBy:[* TO *]"
   TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.0+00:00"
@@ -139,12 +140,13 @@ class EnvironmentState(object):
                'description' : node.description,
                'baseurl' : node.baseURL,
                'type' : node.type,
+               'state': node.state,
                 }
       sync = node.synchronization
       if not sync is None:
         entry['sync.schedule'] = syncschedule_array(sync.schedule)
-        entry['sync.lastHarvested'] = sync.lastHarvested.strftime("%Y-%m-%d %H:%M:%S.0+%z")
-        entry['sync.lastCompleteHarvest'] = sync.lastCompleteHarvest.strftime("%Y-%m-%d %H:%M:%S.0+%z")        
+        entry['sync.lastHarvested'] = sync.lastHarvested.strftime("%Y-%m-%d %H:%M:%S.0%z")
+        entry['sync.lastCompleteHarvest'] = sync.lastCompleteHarvest.strftime("%Y-%m-%d %H:%M:%S.0%z")        
       res[node.identifier.value()] = entry
     return res
 

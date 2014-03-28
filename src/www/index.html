@@ -4,6 +4,10 @@
 <!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
 <!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
 <head>
+  <!--  
+        Style base is with Skeleton
+        https://github.com/dhg/Skeleton  
+    -->
 
   <!-- Basic Page Needs
   ================================================== -->
@@ -58,6 +62,80 @@
 	  return someid.replace( /(:|\.|\[|\])/g, "\\$1" );
   }
   
+  function nowUTC() {
+	  var t = new Date();
+	  return new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate(),
+			              t.getUTCHours(), t.getUTCMinutes(), t.getUTCSeconds(),
+			              t.getUTCMilliseconds())
+  }
+  
+  
+  function dateDelta(t0, t1) {
+	  //Return array of [days, hours, minutes, seconds] between t0 and t1
+	  t0 = t0.getTime();
+	  t1 = t1.getTime();
+	  var msechour = 1000*60*60;
+	  var dt = t1-t0;
+	  var res = [0,0,0,0];
+	  res[0] = Math.floor(dt/(msechour*24));
+	  dt = dt - res[0] * msechour*24;
+	  res[1] = Math.floor(dt/msechour);
+	  dt = dt - res[1] * msechour;
+	  res[2] = Math.floor(dt/(1000*60));
+	  dt = dt - res[2] * 1000*60;
+	  res[3] = Math.floor(dt/1000);
+	  return res;	  
+  }
+  
+  
+  function dateDeltaStr(t0, t1) {
+	 var dt = dateDelta(t0, t1);
+	 if (dt[0] > 1000) {
+		 return "Never";
+	   }
+	 if (dt[0] > 10) {
+		 return dt[0] + " days";
+	 }
+	 if (dt[0] > 0) {
+		 return dt[0] + " days, " + dt[1] + " hours"; 
+	 }
+	 return dt[1] + "h " + dt[2] + "m " + dt[3] + "s";
+  }
+  
+  function renderNodeTable() {
+	  var i = 1;
+	  var tnow = nowUTC();
+	  for (var key in env_state.nodes) {
+		  if (env_state.nodes[key].type=="mn") {
+  		  var tr = $("<tr>");
+  		  if (env_state.meta.version == "1.1.0") {
+  			  tr.attr("class", "mntable");
+  		  } else {
+  			  if (env_state.nodes[key].state) {
+  				  tr.attr("class", "mntable");
+  				} else {
+  				  tr.attr("class", "mntable offline");
+  		    }
+  		  }
+  		  
+  		  console.log(tr);
+  		  tr.append($("<td>").text(i));
+	  	  tr.append($("<td>").text(key));
+	  	  tr.append($("<td>").text(env_state.nodes[key].baseurl));
+	  	  dtd = $("<td>");
+	  	  dtd.attr("title", env_state.nodes[key].description);
+	  	  dtd.text(env_state.nodes[key].name);
+	  	  tr.append(dtd);
+        var tsync = env_state.nodes[key]["sync.lastHarvested"];
+        tsync = tsync.replace("++", "+");
+        tsync = new Date(tsync);
+        tr.append($("<td>").text(dateDeltaStr(tsync, tnow)));
+        $("[id=d1\\.nodes_table]").append(tr);
+        i++;
+		  }
+	  }
+  }
+  
   function renderData(data, textStatus, jqxhr) {
 	  $("[id^=d1\\.]").each(function( index, element ) {
 		  console.log("INDEX = " + element.id );
@@ -68,6 +146,7 @@
 		  }
 		  $("[id=" + jq( element.id) + "]").text( newv );
 	  });
+	  renderNodeTable();
   }
   
   
@@ -148,10 +227,9 @@
 <body>
   <div class="container">
     <div class="sixteen columns">
-      <h1 class="remove-bottom" style="margin-top: 40px">DataONE Production Object Counts</h1>
+      <h2 class="remove-bottom" style="margin-top: 40px">DataONE Production Object Counts</h2>
       <h5>Generated: <span id="d1.meta.tstamp"></span></h5>
       <h5 class="subheader">Base URL: <span id="d1.meta.baseurl"></span></h5>
-      <hr />
     </div>
     <div class="one-third column">
       <h4>All Objects</h4>
@@ -192,16 +270,43 @@
         </div>
       </div>
     </div>
-    <div class="eighteen columns">
-      <div class="five columns">
-        <div id="histogram.data" class="histogram"></div>
+
+    <!--  Object size histograms  -->
+    <div class="sixteen columns">
+	    <h4>Object Size Distribution</h4>
+	      <div class="chart" id="histogram.data"></div>
+        <div class="chart" id="histogram.metadata"></div>
+        <div class="chart" id="histogram.resource"></div>
+    </div>    
+  </div> <!-- container -->
+
+    <div class="page-break">
+      <p>&nbsp;</p>
+    </div>
+    
+  <div class="container">  
+    <!-- Member Node List -->
+    <div class="sixteen columns">
+      <h4>Current Member Nodes</h4>
+      <div class="one column">
+      <span>&nbsp;</span>
       </div>
-      <div class="five columns">
-        <div id="histogram.metadata" class="histogram"></div>
-      </div>
-      <div class="five columns">
-        <div id="histogram.resource" class="histogram"></div>
-      </div>
+      <div class="fifteen columns">
+	      <table class="mntable">
+	        <thead>
+	          <tr>
+	            <th class="mntable">&nbsp;</th>
+	            <th class="mntable">Node ID</th>
+	            <th class="mntable">URL</th>
+	            <th class="mntable">Name</th>
+	            <th class="mntable" title="Age of newest content retrieved from node.">Newest</th>
+	          </tr>
+	        </thead>
+	        <tbody id="d1.nodes_table">
+	        </tbody>
+	      </table>
+	      <p>&nbsp;</p>
+	    </div>
     </div>
   </div><!-- container -->
 </body>
