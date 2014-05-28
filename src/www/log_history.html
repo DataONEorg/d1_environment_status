@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Object Counts</title>
+  <meta name="description" content="Object counts for DataONE $baseurl">
+  <meta name="author" content="Dave">
+
+  <!-- Mobile Specific Metas
+  ================================================== -->
+  <meta name="viewport" 
+        content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- CSS
+  ================================================== -->
+  <!-- grid provides the layout structure -->
+  <link rel="stylesheet" href="css/grid.css">
+  
+  <!-- style defines the overall look and feel -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- app provides support for application specific features -->
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- Favicons
+  ================================================== -->
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+  <!-- Script
+  ================================================== -->
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="lib/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="lib/jquery.parse.min.js"></script>
+  <script type="text/javascript" src="lib/mjd.js"></script>
+  <script type="text/javascript">
+  
+  var VIZ_READY = false;
+  var MAX_CHECKS = 10;
+  var DATA_READY_CHECKS = 0;
+  var VIZ_READY_CHECKS = 0;
+  var CURRENT_DATA_PAGE_INDEX = 0;  var LOG_DATA_SOURCE = "data/production_log_history.csv"
+  var log_data = null;
+  
+  try {
+    google.setOnLoadCallback(visualizationReady);
+    google.load("visualization", "1.1", {
+      packages : [ "annotationchart" ]
+    });
+  } catch (e) {
+    console.log(e);
+    console.log('Google visualizations not available.');
+  }
+  
+
+  function isVizReady() {
+    return VIZ_READY
+  }
+
+  function doRenderVisualizations() {
+    if (!isDataReady()) {
+      VIZ_READY_CHECKS++;
+      if (VIZ_READY_CHECKS < MAX_CHECKS) {
+        setTimeout(doRenderVisualizations, 100);
+      } else {
+        $("#histograms").hide();
+      }
+    } else {
+      renderCharts();
+    }
+  }
+
+  function visualizationReady() {
+    console.log("Visualization loaded.")
+    VIZ_READY = true;
+    //doRenderVisualizations()
+  }
+
+  function renderChart(fieldNames) {
+    var targetid = "log_" + fieldNames[0];
+    var data = new google.visualization.DataTable();
+    data.addColumn('date', 'Date');
+    for (var i in fieldNames) {
+      data.addColumn('number', fieldNames[i]);
+    }
+    for (var i in log_data.results.rows) {
+      var row = log_data.results.rows[i];
+      var dest = [dateFromMJD(row.MJD)];
+      for (var i in fieldNames) {
+        dest.push(row[fieldNames[i]]);
+      }
+      data.addRow(dest);
+    }
+    var options = {
+        lineWidth: 1
+    };
+    var chart = new google.visualization.AnnotationChart(document.getElementById(targetid));
+    chart.draw(data, options);
+  }
+  
+  
+  function renderCharts() {
+    renderChart(['read', 'read.ext']);
+    renderChart(['create']);
+    renderChart(['update']);
+    renderChart(['delete']);
+    renderChart(['replicate']);
+    renderChart(['synchronization_failed']);
+  }
+  
+  function loadData() {
+    $.ajax({
+      url: LOG_DATA_SOURCE,
+      async: false,
+      success: function(csv_string) {
+        log_data = $.parse(csv_string, {
+          delimiter: ',',
+          header: true,
+          dynamicTyping: true
+        });
+        var n = log_data.results.rows.length
+        var latest_date = dateFromMJD(log_data.results.rows[n-1].MJD);
+        $("#last_updated").text(latest_date);
+      },
+      dataType: 'text'
+    });
+    renderCharts();
+    console.log("Done.")
+  }
+  
+  
+  //=== Main ===
+  $(document).ready(function() {
+    //Load a log data from csv file. Load completion will trigger the rendering
+    //process.
+    loadData();
+  });
+  </script>
+
+</head>
+<body>
+<div class="grid grid-pad">
+	<div class="col-1-1">
+	  <h1>DataONE Production Log History</h1>
+	  <p>These charts show daily totals for various log events aggregated from the 
+	  Member Nodes by the Coordinating Nodes. Data feeding the charts is updated
+	  once a day. They were last updated: <span id="last_updated"></span></p>
+		<h2>Read Events</h2>
+		<div id="log_read" style="width:8in; height:3.5in;"></div>
+		<div class="page-break">&nbsp;</div>
+		
+		<h2>Create Events</h2>
+		<div id="log_create" style="width:8in; height:3.5in;"></div>
+		
+		<div class="page-break">&nbsp;</div>
+		
+		<h2>Update Events</h2>
+		<div id="log_update" style="width:8in; height:3.5in;"></div>
+    <div class="page-break">&nbsp;</div>
+    
+		<h2>Delete Events</h2>
+		<div id="log_delete" style="width:8in; height:3.5in;"></div>
+    <div class="page-break">&nbsp;</div>
+    
+		<h2>Replicate Events</h2>
+		<div id="log_replicate" style="width:8in; height:3.5in;"></div>
+    <div class="page-break">&nbsp;</div>
+    
+		<h2>Synchronization_Failed Events</h2>
+		<div id="log_synchronization_failed" style="width:8in; height:3.5in;"></div>
+		<p />
+	</div>
+</div>
+</body>
+</html>

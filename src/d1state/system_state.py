@@ -68,6 +68,23 @@ class EnvironmentState(object):
   JS_VARIABLE_STATE = "var env_state = "
   JS_VARIABLE_INDEX = "var env_state_index = "
   JS_VARIABLE_NODES = "var node_state_index = "
+  #TODO: These IP addresses are specific to the production environment and 
+  #include changes to UCSB and ORC
+  CN_IP_ADDRESSES = ['160.36.134.71',
+                     '128.111.220.46',
+                     '128.111.54.80',
+                     '128.111.36.80',
+                     '160.36.13.150',
+                     '64.106.40.6']
+  LOG_EVENTS = [['create','Created using DataONE API'], 
+                ['read', 'Content downloaded'], 
+                ['read.ext', 'Content downloaded by entities other than CNs'], 
+                ['update', 'Updated'], 
+                ['delete', 'Deleted'], 
+                ['replicate', 'Content retrieved by replication process'], 
+                ['synchronization_failed', 'Attempt to synchronize failed'], 
+                ['replication_failed', 'Attempt to replicate failed'],
+               ]
 
   
   def __init__(self, baseurl, cert_path=None):
@@ -113,40 +130,39 @@ class EnvironmentState(object):
     self.state['summary']['sizes'] = self.getObjectTypeSizeHistogram()
     
     
+  def retrieveLogResponse(self, q, fq=None):
+    url = self.clientv1._rest_url('log')
+    query = {'q': q}
+    if not fq is None:
+      query['fq'] = fq
+    response = self.clientv1.GET(url, query)
+    logrecs = self.clientv1._read_dataone_type_response(response)
+    return logrecs.total
+    
+    
   def getLogSummary(self):
-    events = [['create','Created using DataONE API'], 
-              ['read', 'Content downloaded'], 
-              ['read.ext', 'Content downloaded by entities other than CNs'], 
-              ['update', 'Updated'], 
-              ['delete', 'Deleted'], 
-              ['replicate', 'Content retrieved by replication process'], 
-              ['synchronization_failed', 'Attempt to synchronize failed'], 
-              ['replication_failed', 'Attempt to replicate failed'],
-             ]
     periods = [['Day', 'dateLogged:[NOW-1DAY TO NOW]', 'Past day'],
                ['Week', 'dateLogged:[NOW-7DAY TO NOW]', 'Past week'],
                ['Month', 'dateLogged:[NOW-1MONTH TO NOW]', 'Past month'],
                ['Year', 'dateLogged:[NOW-1YEAR TO NOW]', 'Past year'],
                ['All', 'dateLogged:[2012-07-01T00:00:00.000Z TO NOW]', 'Since July 1, 2012'],
               ]
-    res = {'events': events,
+    res = {'events': EnvironmentState.LOG_EVENTS,
            'periods': map(lambda p: [p[0], p[2]], periods),
            'data': {}}
-    exclude_cns = "-ipAddress:(128.111.54.80 OR 160.36.13.150 OR 64.106.40.6)"
-    for event in events:
+    exclude_cns = "-ipAddress:({0})"\
+                    .format( " OR ".join(EnvironmentState.CN_IP_ADDRESSES))
+    for event in EnvironmentState.LOG_EVENTS:
       res['data'][event[0]] = {}
       for period in periods:
         self.log.info('Log for {0} over {1}'.format(event[0], period[0]))
         if event[0].endswith('.ext'):
           ev = event[0].split(".")[0]
-          q = "event:{0} AND {1} AND {2}".format(ev, period[1], exclude_cns)
+          q = "event:{0} AND {1}".format(ev, exclude_cns)
         else:
-          q = "event:{0} AND {1}".format(event[0], period[1])
-        url = self.clientv1._rest_url('log')
-        query = {'q': q}
-        response = self.clientv1.GET(url, query)
-        logrecs = self.clientv1._read_dataone_type_response(response)
-        nrecords = logrecs.total;
+          q = "event:{0}".format(event[0])
+        fq = period[1]
+        nrecords = self.retrieveLogResponse(q, fq=fq)
         res['data'][event[0]][period[0]] = nrecords
     return res
 

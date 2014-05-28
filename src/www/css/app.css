@@ -81,6 +81,11 @@ td.selected {
     height: 115px;
   }
 
+  .logchart {
+    width: 1000px;
+	  height: 400px;
+  }
+
 }
 
 @media print {
