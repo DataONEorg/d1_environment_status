@@ -124,12 +124,12 @@ function nowUTC() {
 
 function dateDelta(t0, t1) {
   //Return array of [days, hours, minutes, seconds] between t0 and t1
-  console.log("t0 = " + t0);
+  //console.log("t0 = " + t0);
   t0 = t0.getTime();
-  console.log("t0 a = " + t0);
-  console.log("t1 = " + t0);
+  //console.log("t0 a = " + t0);
+  //console.log("t1 = " + t0);
   t1 = t1.getTime();
-  console.log("t1 a= " + t0);
+  //console.log("t1 a= " + t0);
   
   var msechour = 1000 * 60 * 60;
   var dt = t1 - t0;
@@ -174,7 +174,7 @@ function renderNodeTable() {
         }
       }
 
-      console.log(tr);
+      //console.log(tr);
       tr.append($("<td>").text(i));
       tr.append($("<td>").text(key));
       tr.append($("<td>").text(env_state.nodes[key].baseurl));
@@ -222,6 +222,47 @@ function renderDNSInfo() {
   }
 }
 
+
+function renderLogInfo() {
+  if (parseInt(env_state.meta.version) < 17 ) {
+    $("#d1_log").hide();
+    return;
+  }
+  $("#d1_log").show();
+  var target = $("[id=d1_log_info]");
+  var thead = $("<thead>");
+  var tr = $("<tr>");
+  tr.append( $("<th>").text(" ") );
+  var periods = env_state.logs.periods;
+  var events = env_state.logs.events;
+  for (var i in periods) {
+    console.log(periods[i][0]);
+    tr.append( $("<th>").text(periods[i][0])
+                        .attr('title',periods[i][1]));
+  }
+  thead.append(tr);
+  target.append(thead);
+  var tbody = $("<tbody>");
+  for (var i in events) {
+    tr = $("<tr>");
+    tr.append( $("<td>").text(events[i][0]).addClass('embolden rightalign')
+                        .attr('title', events[i][1]));
+    var eventid = events[i][0]
+    for (var j in periods) {
+      var periodid = periods[j][0]
+      var td = $("<td>");
+      td.text( Humanize.compactInteger(env_state.logs.data[eventid][periodid]));
+      td.addClass('rightAlign');
+      td.attr('title', 
+          Humanize.formatNumber(env_state.logs.data[eventid][periodid], 0));
+      tr.append( td );
+    }
+    tbody.append(tr);
+  }
+  target.append(tbody);
+}
+
+
 function renderData(data, textStatus, jqxhr) {
   $("[id^=d1\\.]").each(function(index, element) {
     var keys = element.id.split(".");
@@ -233,6 +274,7 @@ function renderData(data, textStatus, jqxhr) {
   });
   renderNodeTable();
   renderDNSInfo();
+  renderLogInfo();
 }
 
 /**

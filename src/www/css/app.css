@@ -18,6 +18,10 @@
   color: #999999;	
 }
 
+.rightalign {
+	text-align: right;
+}
+
 div.pids {
   -webkit-column-count:4; /* Chrome, Safari, Opera */
   -moz-column-count:4; /* Firefox */

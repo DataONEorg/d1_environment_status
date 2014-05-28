@@ -36,6 +36,7 @@
   ================================================== -->
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
   <script type="text/javascript" src="lib/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="lib/humanize.min.js"></script>
   <!--  
     index.js is a file that contains a single variable, an array of 
     [timestamp, datafile]  
@@ -118,6 +119,15 @@
       <div class="chart" id="histogram.metadata"></div>
       <div class="chart" id="histogram.resource"></div>      
     </div>    
+
+
+    <!-- Log summary -->
+    <div class="col-1-1" id="d1_log">
+      <h2 title="The system event log summary reports the number of log events aggregated by the Coordinating Nodes. Most of these values are unfiltered, and so include events triggered internally as well as externally.
+  Events ending with .ext have Coordinating Nodes excluded.">System Event Log Summary</h2>
+      <table id="d1_log_info">
+      </table>
+    </div>
 
     <div class="page-break">
       <p>&nbsp;</p>

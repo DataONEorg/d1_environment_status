@@ -61,7 +61,7 @@ def escapeQueryTerm(term):
 
 class EnvironmentState(object):
   #increment the version flag if there's a change to the generated data structure  
-  VERSION = "16"
+  VERSION = "17"
   COUNT_PUBLIC = None
   COUNT_PUBLIC_CURRENT = "-obsoletedBy:[* TO *]"
   TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.0+00:00"
@@ -79,7 +79,8 @@ class EnvironmentState(object):
                   'nodes':None,
                   'counts':None,
                   'summary': None,
-                  'dns': None
+                  'dns': None,
+                  'logs': None,
                   }
     self.clientv1 = cnclient.CoordinatingNodeClient( self.baseurl, 
                                                      cert_path=cert_path )
@@ -105,11 +106,50 @@ class EnvironmentState(object):
     self.state['meta'] = meta
     self.state['formats'] = self.getFormats()
     self.state['nodes'] = self.getNodes()
+    self.state['dns'] = self.getDNSInfo()
+    self.state['logs'] = self.getLogSummary()
     self.state['counts'] = self.getCounts()
     self.state['summary'] = self.summarizeCounts()
     self.state['summary']['sizes'] = self.getObjectTypeSizeHistogram()
-    self.state['dns'] = self.getDNSInfo()
     
+    
+  def getLogSummary(self):
+    events = [['create','Created using DataONE API'], 
+              ['read', 'Content downloaded'], 
+              ['read.ext', 'Content downloaded by entities other than CNs'], 
+              ['update', 'Updated'], 
+              ['delete', 'Deleted'], 
+              ['replicate', 'Content retrieved by replication process'], 
+              ['synchronization_failed', 'Attempt to synchronize failed'], 
+              ['replication_failed', 'Attempt to replicate failed'],
+             ]
+    periods = [['Day', 'dateLogged:[NOW-1DAY TO NOW]', 'Past day'],
+               ['Week', 'dateLogged:[NOW-7DAY TO NOW]', 'Past week'],
+               ['Month', 'dateLogged:[NOW-1MONTH TO NOW]', 'Past month'],
+               ['Year', 'dateLogged:[NOW-1YEAR TO NOW]', 'Past year'],
+               ['All', 'dateLogged:[2012-07-01T00:00:00.000Z TO NOW]', 'Since July 1, 2012'],
+              ]
+    res = {'events': events,
+           'periods': map(lambda p: [p[0], p[2]], periods),
+           'data': {}}
+    exclude_cns = "-ipAddress:(128.111.54.80 OR 160.36.13.150 OR 64.106.40.6)"
+    for event in events:
+      res['data'][event[0]] = {}
+      for period in periods:
+        self.log.info('Log for {0} over {1}'.format(event[0], period[0]))
+        if event[0].endswith('.ext'):
+          ev = event[0].split(".")[0]
+          q = "event:{0} AND {1} AND {2}".format(ev, period[1], exclude_cns)
+        else:
+          q = "event:{0} AND {1}".format(event[0], period[1])
+        url = self.clientv1._rest_url('log')
+        query = {'q': q}
+        response = self.clientv1.GET(url, query)
+        logrecs = self.clientv1._read_dataone_type_response(response)
+        nrecords = logrecs.total;
+        res['data'][event[0]][period[0]] = nrecords
+    return res
+
     
   def getDNSInfo(self):
     #TODO: Make this responsive to the CNode specified in the constructor
