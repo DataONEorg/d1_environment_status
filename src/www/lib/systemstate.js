@@ -229,7 +229,7 @@ function renderLogInfo() {
     return;
   }
   $("#d1_log").show();
-  var target = $("[id=d1_log_info]");
+  var target = $("[id=d1\\.log_info]");
   var thead = $("<thead>");
   var tr = $("<tr>");
   tr.append( $("<th>").text(" ") );
@@ -252,7 +252,7 @@ function renderLogInfo() {
       var periodid = periods[j][0]
       var td = $("<td>");
       td.text( Humanize.compactInteger(env_state.logs.data[eventid][periodid]));
-      td.addClass('rightAlign');
+      td.addClass('rightalign');
       td.attr('title', 
           Humanize.formatNumber(env_state.logs.data[eventid][periodid], 0));
       tr.append( td );
@@ -269,6 +269,9 @@ function renderData(data, textStatus, jqxhr) {
     var newv = env_state;
     for ( var i = 1; i < keys.length; i++) {
       newv = newv[keys[i]]
+    }
+    if (typeof newv == "number") {
+      newv = Humanize.formatNumber(newv, 0);
     }
     $("[id=" + jq(element.id) + "]").text(newv);
   });
@@ -322,6 +325,7 @@ function clearPage() {
     $(this).text("");
   });
   $("[id=d1\\.nodes_table]").find("tr").remove();
+  $("[id=d1\\.log_info]").find("tr").remove();
 }
 
 /**
