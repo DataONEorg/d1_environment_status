@@ -17,6 +17,7 @@ import datetime
 import json
 import httplib
 import math
+import dns.resolver
 from d1_client import cnclient, cnclient_1_1
 
 
@@ -60,12 +61,14 @@ def escapeQueryTerm(term):
 
 class EnvironmentState(object):
   #increment the version flag if there's a change to the generated data structure  
-  VERSION = "14"
+  VERSION = "16"
   COUNT_PUBLIC = None
   COUNT_PUBLIC_CURRENT = "-obsoletedBy:[* TO *]"
   TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.0+00:00"
   JS_VARIABLE_STATE = "var env_state = "
   JS_VARIABLE_INDEX = "var env_state_index = "
+  JS_VARIABLE_NODES = "var node_state_index = "
+
   
   def __init__(self, baseurl, cert_path=None):
     self.log = logging.getLogger(str(self.__class__.__name__))
@@ -75,7 +78,8 @@ class EnvironmentState(object):
                   'formats':None,
                   'nodes':None,
                   'counts':None,
-                  'summary': None
+                  'summary': None,
+                  'dns': None
                   }
     self.clientv1 = cnclient.CoordinatingNodeClient( self.baseurl, 
                                                      cert_path=cert_path )
@@ -104,7 +108,23 @@ class EnvironmentState(object):
     self.state['counts'] = self.getCounts()
     self.state['summary'] = self.summarizeCounts()
     self.state['summary']['sizes'] = self.getObjectTypeSizeHistogram()
+    self.state['dns'] = self.getDNSInfo()
     
+    
+  def getDNSInfo(self):
+    #TODO: Make this responsive to the CNode specified in the constructor
+    res = {'cn-ucsb-1.dataone.org':{},
+           'cn-unm-1.dataone.org':{},
+           'cn-orc-1.dataone.org':{},
+           'cn.dataone.org':{}
+           }
+    for k in res.keys():
+      info = dns.resolver.query(k)
+      res[k]['address'] = []
+      for ip in info:
+        res[k]['address'].append(ip.to_text())
+    return res;
+
 
   def getCountsToDate(self, to_date, exclude_listObjects=False):
     self.tstamp = getNow()

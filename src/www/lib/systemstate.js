@@ -194,6 +194,33 @@ function renderNodeTable() {
   }
 }
 
+
+function renderDNSInfo() {
+  if (parseInt(env_state.meta.version) < 16 ) {
+    $("#d1_dns").hide();
+    return;
+  }
+  $("#d1_dns").show();
+  //TODO: Generalize this
+  var target = $("[id=d1\\.dnsinfo]");
+  var prodips = env_state.dns['cn.dataone.org'].address;
+  for (var key in env_state.dns) {
+    if (key != 'cn.dataone.org') {
+      var entry = $("<span>");
+      entry.addClass('spaced');
+      entry.text(key.split(".")[0]);
+      var ip = env_state.dns[key].address[0];
+      entry.attr("title", ip); 
+      if ($.inArray(ip, prodips) >= 0) {
+        entry.addClass('embolden');
+      } else {
+        entry.addClass('deemphasize');
+      }
+      target.append(entry);
+    }
+  }
+}
+
 function renderData(data, textStatus, jqxhr) {
   $("[id^=d1\\.]").each(function(index, element) {
     var keys = element.id.split(".");
@@ -204,6 +231,7 @@ function renderData(data, textStatus, jqxhr) {
     $("[id=" + jq(element.id) + "]").text(newv);
   });
   renderNodeTable();
+  renderDNSInfo();
 }
 
 /**

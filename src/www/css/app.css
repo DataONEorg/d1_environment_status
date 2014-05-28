@@ -2,8 +2,20 @@
 	font-family: "Lucida Console", Courier, fixed;
 }
 
+.spaced {
+	margin-right: 4px;
+}
+
 .pre {
   white-space: pre;
+}
+
+.embolden {
+	font-weight: bold;
+}
+
+.deemphasize {
+  color: #999999;	
 }
 
 div.pids {
