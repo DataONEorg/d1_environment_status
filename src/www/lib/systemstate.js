@@ -186,6 +186,7 @@ function renderNodeTable() {
       tsync = $.trim(tsync);
       tsync = tsync.replace("++", "+");
       tsync = tsync.replace(" ", "T");
+      tsync = tsync.replace("+0000", "Z");
       tsync = new Date(tsync);
       tr.append($("<td>").text(dateDeltaStr(tsync, tnow)));
       $("[id=d1\\.nodes_table]").append(tr);
