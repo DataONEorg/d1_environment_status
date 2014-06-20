@@ -62,6 +62,7 @@ def escapeQueryTerm(term):
 class NodeState(object):
   
   def __init__(self, baseURL):
+    self.log = logging.getLogger(str(self.__class__.__name__))
     self.baseurl = baseURL
     self.clientv1 = mnclient.MemberNodeClient( self.baseurl )
 
@@ -70,8 +71,12 @@ class NodeState(object):
     '''
     Return the number of objects on the node as reported by listObjects
     '''
-    res = self.clientv1.listObjects(start=0, count=0)
-    return res.total
+    try:
+      res = self.clientv1.listObjects(start=0, count=0)
+      return res.total
+    except Exception as e:
+      self.log.error(e)
+      return -1
 
 
 
@@ -233,7 +238,7 @@ class EnvironmentState(object):
                'baseurl' : node.baseURL,
                'type' : node.type,
                'state': node.state,
-               'objectcount': 0,
+               'objectcount': -1,
                 }
       sync = node.synchronization
       if not sync is None:
