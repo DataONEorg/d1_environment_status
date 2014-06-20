@@ -19,6 +19,7 @@ import httplib
 import math
 import dns.resolver
 from d1_client import cnclient, cnclient_1_1
+from d1_client import mnclient
 
 
 def getNow(asDate=False):
@@ -58,10 +59,25 @@ def escapeQueryTerm(term):
     term = term.replace(c,u"\%s" % c)
   return term
 
+class NodeState(object):
+  
+  def __init__(self, baseURL):
+    self.baseurl = baseURL
+    self.clientv1 = mnclient.MemberNodeClient( self.baseurl )
+
+  
+  def count(self):
+    '''
+    Return the number of objects on the node as reported by listObjects
+    '''
+    res = self.clientv1.listObjects(start=0, count=0)
+    return res.total
+
+
 
 class EnvironmentState(object):
   #increment the version flag if there's a change to the generated data structure  
-  VERSION = "17"
+  VERSION = "18"
   COUNT_PUBLIC = None
   COUNT_PUBLIC_CURRENT = "-obsoletedBy:[* TO *]"
   TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.0+00:00"
@@ -217,12 +233,17 @@ class EnvironmentState(object):
                'baseurl' : node.baseURL,
                'type' : node.type,
                'state': node.state,
+               'objectcount': 0,
                 }
       sync = node.synchronization
       if not sync is None:
         entry['sync.schedule'] = syncschedule_array(sync.schedule)
         entry['sync.lastHarvested'] = sync.lastHarvested.strftime("%Y-%m-%d %H:%M:%S.0%z")
-        entry['sync.lastCompleteHarvest'] = sync.lastCompleteHarvest.strftime("%Y-%m-%d %H:%M:%S.0%z")        
+        entry['sync.lastCompleteHarvest'] = sync.lastCompleteHarvest.strftime("%Y-%m-%d %H:%M:%S.0%z")
+        #Call list objects to get a count
+        ns = NodeState(node.baseURL)
+        entry['objectcount'] = ns.count()
+        
       res[node.identifier.value()] = entry
     return res
 
@@ -423,6 +444,11 @@ def test2(baseurl="https://cn.dataone.org/cn"):
   es = EnvironmentState(baseurl)
   pprint.pprint(es.getFormats())
 
+def test3(baseurl="https://knb.ecoinformatics.org/knb/d1/mn"):
+  ns = NodeState(baseurl)
+  n = ns.count()
+  print "{0} : {1}".format(baseurl, n)
+
 
 def main(baseurl="https://cn.dataone.org/cn"):
   es = EnvironmentState(baseurl)
@@ -433,6 +459,7 @@ def main(baseurl="https://cn.dataone.org/cn"):
 #===============================================================================
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)
+  test3()
   #test1()
   #test2()
   #main()
