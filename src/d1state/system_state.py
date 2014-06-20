@@ -96,7 +96,11 @@ class EnvironmentState(object):
                      '128.111.54.80',
                      '128.111.36.80',
                      '160.36.13.150',
-                     '64.106.40.6']
+                     '64.106.40.6',
+                     #'128.219.49.14', #This is a proxy server at ORNL
+                     '128.111.220.51', #UCSB Nagios
+                     '128.111.84.5', ] #UCSB Nagios
+
   LOG_EVENTS = [['create','Created using DataONE API'], 
                 ['read', 'Content downloaded'], 
                 ['read.ext', 'Content downloaded by entities other than CNs'], 
@@ -152,6 +156,7 @@ class EnvironmentState(object):
     
     
   def retrieveLogResponse(self, q, fq=None):
+    self.clientv1.connection.close()
     url = self.clientv1._rest_url('log')
     query = {'q': q}
     if not fq is None:

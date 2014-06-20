@@ -189,6 +189,9 @@ function renderNodeTable() {
       tsync = tsync.replace("+0000", "Z");
       tsync = new Date(tsync);
       tr.append($("<td>").text(dateDeltaStr(tsync, tnow)));
+      if (env_state.meta.version >= 18) {
+        tr.append($("<td>").text(Humanize.formatNumber(env_state.nodes[key]["objectcount"], 0)).addClass('rightalign'));
+      }
       $("[id=d1\\.nodes_table]").append(tr);
       i++;
     }

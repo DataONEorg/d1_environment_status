@@ -263,7 +263,7 @@ def generateHtml(fnDest, formats, template_source):
   '''Generates a HTML summary of the current counts
   '''
   import locale
-  locale.setlocale(locale.LC_ALL, 'en_US')
+  locale.setlocale(locale.LC_ALL, 'en_US.utf8')
   #get counts
   counts = getTotalsByType(formats['formats'])
   #create string representations for substitution
