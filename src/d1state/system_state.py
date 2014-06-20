@@ -241,6 +241,7 @@ class EnvironmentState(object):
         entry['sync.lastHarvested'] = sync.lastHarvested.strftime("%Y-%m-%d %H:%M:%S.0%z")
         entry['sync.lastCompleteHarvest'] = sync.lastCompleteHarvest.strftime("%Y-%m-%d %H:%M:%S.0%z")
         #Call list objects to get a count
+        self.log.info("Attempting node count on {0}".format(node.baseURL))
         ns = NodeState(node.baseURL)
         entry['objectcount'] = ns.count()
         
