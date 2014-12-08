@@ -107,12 +107,19 @@ def mainLogSummary(config, dtstring):
   MJD_D1_START = 56109.0
   envstate = EnvironmentState(config['baseurl'])
   dates = []
+  mjdstart = None
+  mjdend = mjd.now()
   if dtstring == "ALL":
     #special case - bootstrap dataset by downloading records for every day 
     #since the start of DataONE
+    mjdstart = MJD_D1_START
+
+  if not dtstring is None:
+    if mjdstart is None:
+      mjdstart = float(dtstring)
     logging.warn("Starting download of complete log record history...")
     mjdnow = mjd.now()
-    for t in xrange(int(MJD_D1_START), int(mjdnow), 1):
+    for t in xrange(int(mjdstart), int(mjdend), 1):
       dates.append(t*1.0)
     dates.append(mjdnow)
     #print out the header
@@ -124,6 +131,7 @@ def mainLogSummary(config, dtstring):
     dates = [mjd.now(), ]
   exclude_cns = "-ipAddress:({0})"\
                   .format( " OR ".join(EnvironmentState.CN_IP_ADDRESSES))
+  logging.debug("DATES = %s" % str(dates))
   for day in dates:
     dtstring = mjd.MJD2dateTime(day).strftime("%Y-%m-%dT00:00:00Z")
     fq = "dateLogged:[{0}-1DAY TO {0}]".format(dtstring)
@@ -134,6 +142,8 @@ def mainLogSummary(config, dtstring):
         q = "event:{0} AND {1}".format(ev, exclude_cns)
       else:
         q = "event:{0}".format(event[0])
+      logging.debug("Q  = %s" % q)
+      logging.debug("FQ = %s" % fq)
       nrecords = envstate.retrieveLogResponse(q, fq=fq)
       row.append(str(nrecords))
     print ",".join(row)

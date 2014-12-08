@@ -161,6 +161,7 @@ class EnvironmentState(object):
     query = {'q': q}
     if not fq is None:
       query['fq'] = fq
+    #logging.info("URL = %s" % url)
     response = self.clientv1.GET(url, query)
     logrecs = self.clientv1._read_dataone_type_response(response)
     return logrecs.total
