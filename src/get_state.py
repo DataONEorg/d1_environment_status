@@ -134,7 +134,7 @@ def mainLogSummary(config, dtstring):
   logging.debug("DATES = %s" % str(dates))
   for day in dates:
     dtstring = mjd.MJD2dateTime(day).strftime("%Y-%m-%dT00:00:00Z")
-    fq = "dateLogged:[{0}-1DAY TO {0}]".format(dtstring)
+    fq = "dateLogged:[{0}-2DAY TO {0}-1DAY]".format(dtstring)
     row = ["{0:.5f}".format(day)]
     for event in EnvironmentState.LOG_EVENTS:
       if event[0].endswith('.ext'):
