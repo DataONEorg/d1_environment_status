@@ -289,7 +289,7 @@ class EnvironmentState(object):
     '''Populates counts 
     '''
     queryEngine = "solr"
-    query='q'
+    query='/'
     maxrecords = 0
     fields = 'id'    
     date_restriction = ''
@@ -352,7 +352,7 @@ class EnvironmentState(object):
       while ntries < 4:
         try:
           ntries += 1
-          results = eval(self.clientv1.query("solr", query="q", 
+          results = eval(self.clientv1.query("solr", query="/", 
                                   q=q,
                                   fq=fq,
                                   wt='python', 

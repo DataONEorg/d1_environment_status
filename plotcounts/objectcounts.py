@@ -115,7 +115,7 @@ def escapeQueryTerm(term):
 
 def getHitCount(client, q):
   queryEngine = "solr"
-  query='this does not seem to do anything'
+  query='/'
   solrQuery = q
   maxrecords = 0
   fields = 'id'
