@@ -15,9 +15,11 @@ import logging
 import pprint
 import datetime
 import json
+import socket
 import httplib
 import math
 import dns.resolver
+import d1_common.types.exceptions
 from d1_client import cnclient, cnclient_1_1
 from d1_client import mnclient
 
@@ -70,11 +72,91 @@ class NodeState(object):
   def count(self):
     '''
     Return the number of objects on the node as reported by listObjects
+    
+Exceptions.NotAuthorized – (errorCode=401, detailCode=1520)
+Exceptions.InvalidRequest – (errorCode=400, detailCode=1540)
+Exceptions.NotImplemented –
+(errorCode=501, detailCode=1560)
+Raised if some functionality requested is not implemented. In the case of an optional request parameter not being supported, the errorCode should be 400. If the requested format (through HTTP Accept headers) is not supported, then the standard HTTP 406 error code should be returned.
+Exceptions.ServiceFailure – (errorCode=500, detailCode=1580)
+Exceptions.InvalidToken – (errorCode=401, detailCode=1530)    
+
+exception httplib.HTTPException
+exception httplib.NotConnected -10
+exception httplib.InvalidURL -11
+exception httplib.UnknownProtocol -12
+exception httplib.UnknownTransferEncoding -13
+exception httplib.UnimplementedFileMode -14
+exception httplib.IncompleteRead -15
+exception httplib.ImproperConnectionState -16
+exception httplib.CannotSendRequest -17
+exception httplib.CannotSendHeader -18
+exception httplib.ResponseNotReady -19
+exception httplib.BadStatusLine -20
     '''
     try:
       res = self.clientv1.listObjects(start=0, count=0)
       return res.total
+    except d1_common.types.exceptions.NotAuthorized as e:
+      self.log.error(e)
+      return -401
+    except d1_common.types.exceptions.InvalidRequest as e:
+      self.log.error(e)
+      return -400
+    except d1_common.types.exceptions.NotImplemented as e:
+      self.log.error(e)
+      return -501
+    except d1_common.types.exceptions.ServiceFailure as e:
+      self.log.error(e)
+      return -500
+    except d1_common.types.exceptions.InvalidToken as e:
+      self.log.error(e)
+      return -401
+    except httplib.NotConnected as e:
+      self.log.error(e)
+      return -10
+    except httplib.InvalidURL as e:
+      self.log.error(e)
+      return -11
+    except httplib.UnknownProtocol as e:
+      self.log.error(e)
+      return -12
+    except httplib.UnknownTransferEncoding as e:
+      self.log.error(e)
+      return -13
+    except httplib.UnimplementedFileMode as e:
+      self.log.error(e)
+      return -14
+    except httplib.IncompleteRead as e:
+      self.log.error(e)
+      return -15
+    except httplib.ImproperConnectionState as e:
+      self.log.error(e)
+      return -16
+    except httplib.CannotSendRequest as e:
+      self.log.error(e)
+      return -17
+    except httplib.CannotSendHeader as e:
+      self.log.error(e)
+      return -18
+    except httplib.ResponseNotReady as e:
+      self.log.error(e)
+      return -19
+    except httplib.BadStatusLine as e:
+      self.log.error(e)
+      return -20
+    except socket.error as e:
+      self.log.error(e)
+      #See notes.md for a list of error codes
+      if hasattr(e, 'errno'):
+        if e.errno is not None:
+          return -1000 - e.errno
+      return -21
+       
     except Exception as e:
+      '''Something else. Need to examine the client connection object
+      '''     
+      self.log.error("Error not trapped by standard exception.")
       self.log.error(e)
       return -1
 
