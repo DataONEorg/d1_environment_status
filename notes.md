@@ -37,7 +37,7 @@ python ~/.dataone/plotcounts/src/get_state.py -l 2 -D ALL --logsummary \
  > ${HOME}/sync/production_history/data/production_log_history.csv
 ```
 
-Error codes reported by socket error:
+Error codes reported by socket error. Lookup the error names at https://docs.python.org/2/library/errno.html :
 
 ```
 -1001 : EPERM
